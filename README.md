@@ -13,7 +13,7 @@ npm install get-site-urls
 
 ## Usage
 
-```
+```console
 get-site-urls --url http://alexpage.com.au --depth 3
 ```
 
