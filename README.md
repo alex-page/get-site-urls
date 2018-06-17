@@ -13,11 +13,26 @@ npm install get-site-urls
 
 ## Usage
 
-```console
-get-site-urls --url http://alexpage.com.au --depth 3
+```js
+GetSiteUrls( 'alexpage.com.au' )
+	.then( links => console.table( [ links ] ) );
+
+const links = await GetSiteUrls( 'https://alexpage.com.au' );
 ```
+
+
+## Parameters
+
+The function GetSiteUrls takes four parameters:
+
+```
+GetSiteUrls( url, maxDepth );
+```
+
+1. url - The url to search
+1. maxDepth - The maximum depth to search, default 100
 
 
 ## Release History
 
-* v0.0.0 - Initial commit
+* v0.0.0 - 💥 First commit
