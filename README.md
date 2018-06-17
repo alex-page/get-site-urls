@@ -14,6 +14,8 @@ npm install get-site-urls
 ## Usage
 
 ```js
+const GetSiteUrls = require( 'get-site-urls' );
+
 GetSiteUrls( 'alexpage.com.au' )
   .then( links => console.log( [ links ] ) );
 
