@@ -155,7 +155,4 @@ const GetSiteUrls = (
 };
 
 
-GetSiteUrls( 'netlify.com' ).then( ({ pages }) => console.log( pages ) );
-
-
 module.exports = GetSiteUrls;
