@@ -15,9 +15,29 @@ npm install get-site-urls
 
 ```js
 GetSiteUrls( 'alexpage.com.au' )
-	.then( links => console.table( [ links ] ) );
+  .then( links => console.log( [ links ] ) );
 
-const links = await GetSiteUrls( 'https://alexpage.com.au' );
+( async () => {
+    try {
+        const links = await GetSiteUrls( 'https://alexpage.com.au' );
+        console.log( links );
+    } catch (error) {
+        console.log( error );
+        //=> 'Failed to get URLs ...'
+    }
+})();
+
+// Output would be:
+// { 
+//   pages: [ 
+//     'https://alexpage.com.au',
+//     'https://alexpage.com.au/harmonograph',
+//     'https://alexpage.com.au/talks/react-government',
+//     'https://alexpage.com.au/talks/living-styleguides'
+//     ...
+//   ], 
+//   error: []
+// }'
 ```
 
 
@@ -35,4 +55,5 @@ GetSiteUrls( url, maxDepth );
 
 ## Release History
 
-* v0.0.0 - 💥 First commit
+* v1.0.1 - 📖 Fixing up documentation
+* v1.0.0 - 💥 First commit

@@ -1,13 +1,13 @@
 {
 	"name": "get-site-urls",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Get all of the URL's from a website.",
 	"scripts": {
 		"start": "node index.js"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/alex-page/pizza.git"
+		"url": "git+https://github.com/alex-page/get-site-urls.git"
 	},
 	"keywords": [
 		"crawl",
