@@ -73,40 +73,33 @@ const GetLinks = ( data, pageUrl, siteUrl ) => {
 	return links;
 };
 
-
 /**
- * GetSiteUrls - Fetch all of the URL's from a website 🔗
+ * SearchSite - Fetch all of the URL's from a website 🔗
  *
  * @param {string} siteUrl    - The URL we are searching
  * @param {number} maxDepth   - The maximum depth it should crawl
  * @param {object} pages      - The found pages, error pages and next pages in queue
  * @param {number} depth      - The current crawl depth
+ * @param {string} auth       - Basic authentication if provided
  *
  * @return {array}            - An array of links found
  */
-const GetSiteUrls = async (
-	siteUrl,
-	maxDepth = 100,
-	pages = {
-		queue:  new Set( [ CleanUrl( siteUrl ) ] ),
-		found:  new Set( [] ),
-		errors: new Set( [] ),
-	},
-	depth = 0,
-) => {
-	if( !siteUrl ) {
-		throw new Error( 'Site url must be defined' );
-	}
-
+const SearchSite = async ( siteUrl, maxDepth, pages, depth, auth ) => {
 	// For each url fetch the page data
 	const getLinks = [ ...pages.queue ].map( async ( url ) => {
 		// Delete the URL from queue
 		pages.queue.delete( url );
 
 		try {
-			const { headers } = await Got.head( url );
+			// Add authentication if it is defined
+			const gotOptions = auth ? { auth } : {};
+
+			// Get the page header so we can check the type is text/html
+			const { headers } = await Got.head( url, gotOptions );
+
+			// If it is a HTML page get the body and search for links
 			if( headers[ 'content-type' ].includes( 'text/html' ) ) {
-				const { body } = await Got( url );
+				const { body } = await Got( url, gotOptions );
 
 				// Add to found as it is a HTML page
 				pages.found.add( url );
@@ -137,7 +130,31 @@ const GetSiteUrls = async (
 	}
 
 	// Start the search again as the queue has more to search
-	return GetSiteUrls( siteUrl, maxDepth, pages, depth + 1 );
+	return SearchSite( siteUrl, maxDepth, pages, depth + 1, auth );
+};
+
+
+/**
+ * GetSiteUrls - Fetch all of the URL's from a website 🔗
+ *
+ * @param {string} siteUrl    - The URL we are searching
+ * @param {number} maxDepth   - The maximum depth it should crawl
+ *
+ * @return {array}            - An array of links found
+ */
+const GetSiteUrls = ( siteUrl, maxDepth = 100 ) => {
+	const { username, password } = new URL( siteUrl );
+
+	const pages = {
+		queue:  new Set( [ CleanUrl( siteUrl ) ] ),
+		found:  new Set( [] ),
+		errors: new Set( [] ),
+	};
+
+	const depth = 0;
+	const auth = username && password ? `${ username }:${ password }` : '';
+
+	return SearchSite( CleanUrl( siteUrl ), maxDepth, pages, depth, auth );
 };
 
 

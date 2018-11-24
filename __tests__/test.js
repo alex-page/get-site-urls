@@ -16,7 +16,7 @@ const Express = require( 'express' );
 // Local dependencies
 // ------------
 const GetSiteUrls = require( '..' );
-const { CleanUrl, GetLinks } = require( '..' );
+const { CleanUrl, GetLinks, SearchSite } = require( '..' );
 
 
 // Integration test for a website
@@ -63,6 +63,7 @@ Ava( 'Clean URL test', ( test ) => {
 	test.is( CleanUrl( 'https://alexpage.com.au/home/../about' ), 'https://alexpage.com.au/about' );
 	test.is( CleanUrl( 'https://alexpage.com.au/?a=abc?b=123' ), 'https://alexpage.com.au' );
 	test.is( CleanUrl( 'asiodjoais' ), 'http://asiodjoais' );
+	test.is( CleanUrl( 'https://ds:ds@designsystem.apps.y.cld.gov.au/' ), 'https://designsystem.apps.y.cld.gov.au' );
 });
 
 

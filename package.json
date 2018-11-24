@@ -3,7 +3,6 @@
 	"version": "2.0.0",
 	"description": "Get all of the URL's from a website.",
 	"scripts": {
-		"start": "node index.js",
 		"test": "ava __tests__/test.js"
 	},
 	"repository": {

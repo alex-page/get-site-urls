@@ -14,12 +14,15 @@ npm install get-site-urls
 ## Usage
 
 ```js
-GetSiteUrls( 'alexpage.com.au' )
-	.then( links => console.table( links.pages ) );
+GetSiteUrls( 'https://alexpage.com.au' )
+	.then( links => console.log( links ) );
+
+GetSiteUrls( 'https://ds:ds@designsystem.apps.y.cld.gov.au' )
+	.then( links => console.log( links ) );
 
 ( async () => {
 	const links = await GetSiteUrls( 'https://alexpage.com.au' );
-	console.table( links.pages );
+	console.log( links );
 })();
 ```
 
