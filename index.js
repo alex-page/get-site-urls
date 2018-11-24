@@ -15,16 +15,29 @@ const NormalizeUrl = require( 'normalize-url' );
 
 
 /**
+ * CleanURL - Clean the URL with normalize-url
+ *
+ * @param   {string} url - A url to clean up
+ * @returns {string}     - A clean url
+ */
+const CleanUrl = url => NormalizeUrl( url, {
+	stripHash:             true,
+	removeQueryParameters: [ new RegExp( '.*' ) ],
+});
+
+
+/**
  * GetLinks - Get all of the URL's from an array of strings
  *
- * @param  {array}  data        - The page body
- * @param  {string} url  - The current URL we are searching
- * @param  {string} searchUrl   - The URL of the website we are searching
+ * @param  {array}  data        - The pages body
+ * @param  {string} pageUrl     - The page we are searching for links
+ * @param  {string} siteUrl     - The website we are searching
  *
  * @return {array}        - An array of links found
  */
-const GetLinks = ( data, url, searchUrl ) => {
-	const linkPattern = /<a[^>]+href="(.*?)"/g;
+const GetLinks = ( data, pageUrl, siteUrl ) => {
+	// Regex link pattern
+	const linkPattern = /(?!.*mailto:)(?!.*tel:).<a[^>]+href="(.*?)"/g;
 	const links = [];
 	let result = true;
 
@@ -33,7 +46,7 @@ const GetLinks = ( data, url, searchUrl ) => {
 		// Search the string using the regex pattern
 		result = linkPattern.exec( data );
 
-		// Check that the string is finished searching
+		// If there is no result then end the search
 		if( result === null ) {
 			result = false;
 			break;
@@ -41,29 +54,18 @@ const GetLinks = ( data, url, searchUrl ) => {
 
 		const link = result[ 1 ];
 
-		if( link.startsWith( searchUrl ) ) {
-			links.push( NormalizeUrl( link ) );
+		// If the link already starts with the URL
+		if( link.startsWith( siteUrl ) ) {
+			links.push( CleanUrl( link ) );
 		}
-		else if(
-			!link.startsWith( 'http' ) &&
-			!link.startsWith( 'https' ) &&
-			!link.endsWith( '.jpg' ) &&
-			!link.endsWith( '.png' ) &&
-			!link.endsWith( '.svg' ) &&
-			!link.endsWith( '.gif' ) &&
-			!link.includes( 'mailto:' ) &&
-			!link.includes( 'tel:' )
+		// Otherwise make sure it is relative or absolute
+		else if( !link.startsWith( 'http' ) && !link.startsWith( 'https' )
 		) {
-			if( link.startsWith( '/' ) ) {
-				links.push( NormalizeUrl( `${ searchUrl }/${ link }`, {
-					removeQueryParameters: [ new RegExp( '.*' ) ],
-				}) );
-			}
-			else {
-				links.push( NormalizeUrl( `${ url }/${ link }`, {
-					removeQueryParameters: [ new RegExp( '.*' ) ],
-				}) );
-			}
+			const pageLink = link.startsWith( '/' )
+				? `${ siteUrl }${ link }`
+				: `${ pageUrl }/${ link }`;
+
+			links.push( CleanUrl( pageLink ) );
 		}
 	}
 
@@ -71,88 +73,94 @@ const GetLinks = ( data, url, searchUrl ) => {
 	return links;
 };
 
-
 /**
- * FetchData
+ * SearchSite - Fetch all of the URL's from a website 🔗
  *
- * @param {string}  url - the url
+ * @param {string} siteUrl    - The URL we are searching
+ * @param {number} maxDepth   - The maximum depth it should crawl
+ * @param {object} pages      - The found pages, error pages and next pages in queue
+ * @param {number} depth      - The current crawl depth
+ * @param {string} auth       - Basic authentication if provided
  *
- * @return {object}     - the result
+ * @return {array}            - An array of links found
  */
-const FetchData = async ( url ) => {
-	try {
-		const { body } = await Got( url );
-		return { url, body };
-	}
-	catch( error ) {
+const SearchSite = async ( siteUrl, maxDepth, pages, depth, auth ) => {
+	// For each url fetch the page data
+	const getLinks = [ ...pages.queue ].map( async ( url ) => {
+		// Delete the URL from queue
+		pages.queue.delete( url );
+
+		try {
+			// Add authentication if it is defined
+			const gotOptions = auth ? { auth } : {};
+
+			// Get the page header so we can check the type is text/html
+			const { headers } = await Got.head( url, gotOptions );
+
+			// If it is a HTML page get the body and search for links
+			if( headers[ 'content-type' ].includes( 'text/html' ) ) {
+				const { body } = await Got( url, gotOptions );
+
+				// Add to found as it is a HTML page
+				pages.found.add( url );
+
+				// Add the unique links to the queue
+				GetLinks( body, url, CleanUrl( siteUrl ) ).forEach( ( link ) => {
+					// If the link is not in error or found add to queue
+					if( !pages.found.has( link ) && !pages.errors.has( link ) ) {
+						pages.queue.add( link );
+					}
+				});
+			}
+		}
+		catch( error ) {
+			pages.errors.add( url );
+		}
+	});
+
+	await Promise.all( getLinks );
+
+	// If we have reached maximum depth or the queue is empty
+	// maxDepth + 1 as the first page doesn't count
+	if( depth === maxDepth || pages.queue.size === 0 ) {
 		return {
-			url,
-			body: false,
+			pages:  [ ...pages.found ],
+			errors: [ ...pages.errors ],
 		};
 	}
+
+	// Start the search again as the queue has more to search
+	return SearchSite( siteUrl, maxDepth, pages, depth + 1, auth );
 };
 
 
 /**
  * GetSiteUrls - Fetch all of the URL's from a website 🔗
  *
- * @param {string} searchUrl  - The URL we are searching
+ * @param {string} siteUrl    - The URL we are searching
  * @param {number} maxDepth   - The maximum depth it should crawl
- * @param {object} pages      - The found pages, error pages and next pages in queue
- * @param {number} depth      - The current crawl depth
  *
  * @return {array}            - An array of links found
  */
-const GetSiteUrls = (
-	searchUrl,
-	maxDepth = 100,
-	pages = {
-		queue: new Set( [ NormalizeUrl( searchUrl ) ] ),
-		found: new Set( [] ),
-		error: new Set( [] ),
-	},
-	depth = 0,
-) => {
-	// For each item in the queue get the data
-	const siteDataToResolve = [];
-	[ ...pages.queue ].forEach( ( url ) => {
-		siteDataToResolve.push( FetchData( url ) );
-	});
+const GetSiteUrls = ( siteUrl, maxDepth = 100 ) => {
+	const { username, password } = new URL( siteUrl );
 
-	return Promise.all( siteDataToResolve )
-		.then( ( data ) => {
-			data.forEach( ({ url, body }) => {
-				pages.queue.delete( url ); // Remove the URL from the queue
+	const pages = {
+		queue:  new Set( [ CleanUrl( siteUrl ) ] ),
+		found:  new Set( [] ),
+		errors: new Set( [] ),
+	};
 
-				// The page exists
-				if( body ) {
-					pages.found.add( url ); // Add the URL to found
+	const depth = 0;
+	const auth = username && password ? `${ username }:${ password }` : '';
 
-					// Add the links inside body to the queue
-					GetLinks( body, url, searchUrl ).forEach( ( link ) => {
-						if( !pages.found.has( link ) && !pages.error.has( link ) ) {
-							pages.queue.add( link );
-						}
-					});
-				}
-				// There was an error add the url to the error array
-				else {
-					pages.error.add( url );
-				}
-			});
-
-			// If we have reached maximum depth or the queue is empty
-			// maxDepth + 1 as the first page doesn't count
-			if( depth === maxDepth || pages.queue.size === 0 ) {
-				return {
-					pages: [ ...pages.found ],
-					error: [ ...pages.error ],
-				};
-			}
-
-			return GetSiteUrls( searchUrl, maxDepth, pages, depth + 1 );
-		});
+	return SearchSite( CleanUrl( siteUrl ), maxDepth, pages, depth, auth );
 };
 
 
+// Export the default module
 module.exports = GetSiteUrls;
+
+// Export the functions for testing
+module.exports.CleanUrl = CleanUrl;
+module.exports.GetLinks = GetLinks;

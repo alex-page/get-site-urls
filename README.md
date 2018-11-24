@@ -1,4 +1,4 @@
-🔗 Get site URL's
+🔗 Get site URL's   [![Build Status](https://travis-ci.org/alex-page/get-site-urls.svg?branch=master)](https://travis-ci.org/alex-page/get-site-urls)
 ==============
 
 > Get all of the URL's from a website.
@@ -14,38 +14,22 @@ npm install get-site-urls
 ## Usage
 
 ```js
-const GetSiteUrls = require( 'get-site-urls' );
+GetSiteUrls( 'https://alexpage.com.au' )
+	.then( links => console.log( links ) );
 
-GetSiteUrls( 'alexpage.com.au' )
-  .then( links => console.log( [ links ] ) );
+GetSiteUrls( 'https://ds:ds@designsystem.apps.y.cld.gov.au' )
+	.then( links => console.log( links ) );
 
 ( async () => {
-    try {
-        const links = await GetSiteUrls( 'https://alexpage.com.au' );
-        console.log( links );
-    } catch (error) {
-        console.log( error );
-        //=> 'Failed to get URLs ...'
-    }
+	const links = await GetSiteUrls( 'https://alexpage.com.au' );
+	console.log( links );
 })();
-
-// Output would be:
-// { 
-//   pages: [ 
-//     'https://alexpage.com.au',
-//     'https://alexpage.com.au/harmonograph',
-//     'https://alexpage.com.au/talks/react-government',
-//     'https://alexpage.com.au/talks/living-styleguides'
-//     ...
-//   ], 
-//   error: []
-// }'
 ```
 
 
 ## Parameters
 
-The function GetSiteUrls takes four parameters:
+The function GetSiteUrls takes two parameters:
 
 ```
 GetSiteUrls( url, maxDepth );
@@ -57,5 +41,5 @@ GetSiteUrls( url, maxDepth );
 
 ## Release History
 
-* v1.0.1 - 📖 Fixing up documentation
+* v1.1.0 - Fixing bugs with urls, adding tests and basic auth support
 * v1.0.0 - 💥 First commit
