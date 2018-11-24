@@ -16,7 +16,7 @@ const Express = require( 'express' );
 // Local dependencies
 // ------------
 const GetSiteUrls = require( '..' );
-const { CleanUrl, GetLinks, SearchSite } = require( '..' );
+const { CleanUrl, GetLinks } = require( '..' );
 
 
 // Integration test for a website
