@@ -1,4 +1,4 @@
-🔗 Get site URL's
+🔗 Get site URL's   [![Build Status](https://travis-ci.org/alex-page/get-site-urls.svg?branch=master)](https://travis-ci.org/alex-page/get-site-urls)
 ==============
 
 > Get all of the URL's from a website.
