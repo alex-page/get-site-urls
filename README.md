@@ -15,15 +15,18 @@ npm install get-site-urls
 
 ```js
 GetSiteUrls( 'alexpage.com.au' )
-	.then( links => console.table( [ links ] ) );
+	.then( links => console.table( links.pages ) );
 
-const links = await GetSiteUrls( 'https://alexpage.com.au' );
+( async () => {
+	const links = await GetSiteUrls( 'https://alexpage.com.au' );
+	console.table( links.pages );
+})();
 ```
 
 
 ## Parameters
 
-The function GetSiteUrls takes four parameters:
+The function GetSiteUrls takes two parameters:
 
 ```
 GetSiteUrls( url, maxDepth );
@@ -35,4 +38,5 @@ GetSiteUrls( url, maxDepth );
 
 ## Release History
 
-* v0.0.0 - 💥 First commit
+* v1.1.0 - Fixing bugs with urls and tests
+* v1.0.0 - 💥 First commit
