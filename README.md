@@ -41,5 +41,5 @@ GetSiteUrls( url, maxDepth );
 
 ## Release History
 
-* v1.1.0 - Fixing bugs with urls and tests
+* v1.1.0 - Fixing bugs with urls, adding tests and basic auth support
 * v1.0.0 - 💥 First commit
