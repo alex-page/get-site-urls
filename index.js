@@ -1,7 +1,5 @@
 /*
  *
- * index.js - Where the magic happens
- *
  * GetSiteUrls - Get all of the URL's from a website 🔗
  *
  */
