@@ -1,4 +1,4 @@
-🔗 Get site URL's   [![Build Status](https://travis-ci.org/alex-page/get-site-urls.svg?branch=master)](https://travis-ci.org/alex-page/get-site-urls)
+🔗 Get site URL's
 ==============
 
 > Get all of the URL's from a website.
@@ -41,6 +41,7 @@ GetSiteUrls( url, maxDepth );
 
 ## Release History
 
+* v1.1.3 - Replace travis with GitHub actions
 * v1.1.2 - Update package.json link
 * v1.1.1 - Fix issue with CI
 * v1.1.0 - Fixing bugs with urls, adding tests and basic auth support
