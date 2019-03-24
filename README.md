@@ -41,6 +41,7 @@ GetSiteUrls( url, maxDepth );
 
 ## Release History
 
+* v1.1.4 - Use files instead of `.npmignore`
 * v1.1.3 - Replace travis with GitHub actions
 * v1.1.2 - Update package.json link
 * v1.1.1 - Fix issue with CI
