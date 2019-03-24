@@ -31,17 +31,18 @@ Ava( 'Intergration test, mock website', async ( test ) => {
 	const urls = await GetSiteUrls( 'http://localhost:3000' );
 
 	const errors = [
-		'http://localhost:3000/test-c',
 		'http://localhost:3000/test-b/img.jpeg',
 		'http://localhost:3000/test-b/img.iojiajsdja',
 		'http://localhost:3000/test-b/img.png',
 		'http://localhost:3000/test-a/test-b',
+		'http://localhost:3000/test-does-not-exist',
 	];
 
 	const pages = [
 		'http://localhost:3000',
 		'http://localhost:3000/test-a',
 		'http://localhost:3000/test-b',
+		'http://localhost:3000/test-c',
 	];
 
 	// Compare the results
@@ -60,6 +61,7 @@ Ava( 'Clean URL test', ( test ) => {
 	test.is( CleanUrl( 'alexpage.com.au/' ), 'http://alexpage.com.au' );
 	test.is( CleanUrl( 'alexpage.com.au' ), 'http://alexpage.com.au' );
 	test.is( CleanUrl( 'https://alexpage.com.au/#abc' ), 'https://alexpage.com.au' );
+	test.is( CleanUrl( 'https://alexpage.com.au/withslash/' ), 'https://alexpage.com.au/withslash' );
 	test.is( CleanUrl( 'https://alexpage.com.au/home/../about' ), 'https://alexpage.com.au/about' );
 	test.is( CleanUrl( 'https://alexpage.com.au/?a=abc?b=123' ), 'https://alexpage.com.au' );
 	test.is( CleanUrl( 'asiodjoais' ), 'http://asiodjoais' );
@@ -74,7 +76,7 @@ Ava( 'Get links', ( test ) => {
 		<link rel="stylesheet" href="/style.css">
 		<link rel="stylesheet" href="http://localhost:3000/style.css">
 		<p>Link</p>
-		<p href="test-b">Link</p>
+		<p href="failed-link">Link</p>
 		<a>Link</a>
 		<a href="#">Link</a>
 		<a href="/test-b?a=s121&b=0120912">Link</a>
@@ -83,9 +85,11 @@ Ava( 'Get links', ( test ) => {
 		<a href="test-b">Link</a>
 		<a href="/test-b">Link</a>
 		<a href="/test-a">Link</a>
+		<a href="/test-d/">Link</a>
+		<a href="http://localhost:3000/test-e/">Link</a>
 		<script src="/here.js"></script>`;
 
-	const links = 	[
+	const links = [
 		'http://localhost:3000',
 		'http://localhost:3000/test-b',
 		'http://localhost:3000/test-c',
@@ -93,6 +97,8 @@ Ava( 'Get links', ( test ) => {
 		'http://localhost:3000/test-b',
 		'http://localhost:3000/test-b',
 		'http://localhost:3000/test-a',
+		'http://localhost:3000/test-d',
+		'http://localhost:3000/test-e',
 	];
 
 	const foundLinks = GetLinks( data, 'http://localhost:3000', 'http://localhost:3000' );

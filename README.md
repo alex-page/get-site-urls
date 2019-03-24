@@ -14,6 +14,8 @@ npm install get-site-urls
 ## Usage
 
 ```js
+const GetSiteUrls = require( 'get-site-urls' );
+
 GetSiteUrls( 'https://alexpage.com.au' )
 	.then( links => console.log( links ) );
 
@@ -41,6 +43,7 @@ GetSiteUrls( url, maxDepth );
 
 ## Release History
 
+* v1.1.5 - Add tests for urls with ending slash, update documentation
 * v1.1.4 - Use files instead of `.npmignore`
 * v1.1.3 - Replace travis with GitHub actions
 * v1.1.2 - Update package.json link
