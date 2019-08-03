@@ -1,9 +1,9 @@
 {
 	"name": "get-site-urls",
-	"version": "1.1.5",
+	"version": "1.1.6",
 	"description": "Get all of the URL's from a website.",
 	"scripts": {
-		"test": "ava __tests__/test.js"
+		"test": "ava && xo"
 	},
 	"repository": {
 		"type": "git",
@@ -37,11 +37,9 @@
 		"url": "https://github.com/alex-page/get-site-urls/issues"
 	},
 	"devDependencies": {
-		"ava": "^1.2.1",
-		"eslint": "^4.19.1",
-		"eslint-config-airbnb-base": "^12.1.0",
-		"eslint-plugin-import": "^2.12.0",
-		"express": "^4.16.3"
+		"ava": "^2.0.0",
+		"express": "^4.16.3",
+		"xo": "^0.24.0"
 	},
 	"dependencies": {
 		"got": "^9.3.2",
