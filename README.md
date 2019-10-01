@@ -43,6 +43,7 @@ GetSiteUrls( url, maxDepth );
 
 ## Release History
 
+* v1.1.7 - Update dependencies and GitHub actions to yml syntax
 * v1.1.6 - Use `xo` and `ava`, update dependencies
 * v1.1.5 - Add tests for urls with ending slash, update documentation
 * v1.1.4 - Use files instead of `.npmignore`
