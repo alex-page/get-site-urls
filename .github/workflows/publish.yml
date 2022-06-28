@@ -3,22 +3,20 @@ name: Publish package
 on:
   push:
     branches:
-    - main
+      - main
 
 jobs:
   deploy:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@main
-    - uses: actions/setup-node@main
-      with:
-        node-version: '10.x'
-        registry-url: 'https://registry.npmjs.org'
-    - run: |
-        npm install
-        npm run test
-    - run: npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          registry-url: "https://registry.npmjs.org"
+      - run: |
+          npm install
+          npm run test
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}

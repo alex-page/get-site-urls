@@ -1,48 +1,54 @@
 {
-	"name": "get-site-urls",
-	"version": "1.1.7",
-	"description": "Get all of the URL's from a website.",
-	"scripts": {
-		"test": "ava && xo"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/alex-page/get-site-urls.git"
-	},
-	"files": [
-		"index.js"
-	],
-	"keywords": [
-		"crawl",
-		"urls",
-		"get",
-		"site",
-		"links"
-	],
-	"main": "index.js",
-	"author": {
-		"name": "Alex Page",
-		"email": "alex@alexpage.com.au",
-		"url": "https://alexpage.dev"
-	},
-	"contributors": [
-		{
-			"name": "Alex Page",
-			"email": "alex@alexpage.com.au",
-			"url": "https://alexpage.dev"
-		}
-	],
-	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/alex-page/get-site-urls/issues"
-	},
-	"devDependencies": {
-		"ava": "^2.0.0",
-		"express": "^4.16.3",
-		"xo": "^0.24.0"
-	},
-	"dependencies": {
-		"got": "^9.3.2",
-		"normalize-url": "^4.0.0"
-	}
+  "name": "get-site-urls",
+  "version": "2.0.0",
+  "description": "Crawl a URL to generate a sitemap and find 404 errors with one command",
+  "scripts": {
+    "test": "node index.test.js && xo"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alex-page/get-site-urls.git"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "crawl",
+    "urls",
+    "get",
+    "site",
+    "links",
+    "sitemap",
+    "generate"
+  ],
+  "main": "index.js",
+  "author": {
+    "name": "Alex Page",
+    "email": "alex@alexpage.com.au",
+    "url": "https://alexpage.dev"
+  },
+  "contributors": [
+    {
+      "name": "Alex Page",
+      "email": "alex@alexpage.com.au",
+      "url": "https://alexpage.dev"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alex-page/get-site-urls/issues"
+  },
+  "devDependencies": {
+    "execa": "^6.1.0",
+    "express": "^4.18.1",
+    "xo": "^0.50.0"
+  },
+  "dependencies": {
+    "got": "^12.1.0",
+    "htmlparser2": "^8.0.1",
+    "meow": "^10.1.2",
+    "normalize-url": "^7.0.3",
+    "ora": "^6.1.0"
+  }
 }
