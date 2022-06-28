@@ -36,6 +36,7 @@ Examples
 
 ## Release History
 
+- v2.0.4 - Remove exports, relative bin entry, index.js !# to run in node env
 - v2.0.3 - Rename main to exports in package.json
 - v2.0.2 - Add name to bin entry in package.json
 - v2.0.1 - Add missing bin entry in package.json

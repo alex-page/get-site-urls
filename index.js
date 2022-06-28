@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import meow from 'meow';
 import got from 'got';
 import ora from 'ora';
