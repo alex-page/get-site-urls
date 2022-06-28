@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-import meow from 'meow';
-import got from 'got';
-import ora from 'ora';
-import normalizeUrl from 'normalize-url';
-import {Parser} from 'htmlparser2';
+import fs from "fs";
+import meow from "meow";
+import got from "got";
+import ora from "ora";
+import normalizeUrl from "normalize-url";
+import { Parser } from "htmlparser2";
 
 const cli = meow(
 	`
@@ -11,30 +12,31 @@ const cli = meow(
 		$ get-site-urls <url>
 
 	Options
-		--maxdepth, The maximum nested routes to search (default, 100)
+		--max-depth=<number>,   Maximum depth of routes to search
+		--output=<string>, -o   File saved to the system
+		--format=<string>, -f,  File format
 
 	Examples
 		$ get-site-urls polaris.shopify.com
-		http://polaris.shopify.com
-		http://polaris.shopify.com/components
-		http://polaris.shopify.com/components/account-connection
-		http://polaris.shopify.com/components/action-list
-		http://polaris.shopify.com/components/actions/button
-		http://polaris.shopify.com/components/actions/button-group
-		http://polaris.shopify.com/components/app-provider
-		http://polaris.shopify.com/components/autocomplete
+		Created data.json [166 urls found, 2 errors]
 `,
 	{
 		importMeta: import.meta,
 		flags: {
-			maxdepth: {
+			maxDepth: {
 				default: 100,
 			},
+			output: {
+				default: "data.json",
+			},
+			format: {
+				default: "json",
+			},
 		},
-	},
+	}
 );
 
-const cleanUrl = url =>
+const cleanUrl = (url) =>
 	normalizeUrl(url, {
 		stripHash: true,
 		removeQueryParameters: true,
@@ -57,27 +59,33 @@ const crawlUrl = async ({
 	currentDepth += 1;
 
 	try {
-		const {headers} = await got.head(url);
-		if (!headers['content-type'].includes('text/html')) {
+		const { headers, statusCode } = await got.head(url);
+		if (statusCode !== 200) {
+			console.log(statusCode);
+			data.errors.add(url);
+			return;
+		}
+
+		if (!headers["content-type"].includes("text/html")) {
 			return;
 		}
 
 		data.found.add(url);
 
-		const {body} = await got(url);
+		const { body } = await got(url);
 		const parser = new Parser({
 			onopentag(name, attributes) {
-				if (name === 'a' && attributes.href) {
+				if (name === "a" && attributes.href) {
 					if (
-						attributes.href.startsWith('#')
-            || attributes.href.startsWith('mailto:')
-            || attributes.href.startsWith('tel:')
-            || attributes.href.startsWith('http')
+						attributes.href.startsWith("#") ||
+						attributes.href.startsWith("mailto:") ||
+						attributes.href.startsWith("tel:") ||
+						attributes.href.startsWith("http")
 					) {
 						return;
 					}
 
-					const newUrl = attributes.href.startsWith('/')
+					const newUrl = attributes.href.startsWith("/")
 						? cleanUrl(`${baseUrl}${attributes.href}`)
 						: cleanUrl(`${url}/${attributes.href}`);
 
@@ -91,31 +99,31 @@ const crawlUrl = async ({
 		parser.end();
 
 		if (data.queue.size > 0) {
-			spinner.text = `Found ${data.found.size}, Queued ${data.queue.size}`;
-			const searchSite = [...data.queue].map(url =>
-				crawlUrl({url, baseUrl, data, currentDepth, maxDepth, spinner}),
+			spinner.text = `Found ${data.found.size}, Queued ${data.queue.size}, Errors ${data.errors.size}`;
+			const searchSite = [...data.queue].map((url) =>
+				crawlUrl({ url, baseUrl, data, currentDepth, maxDepth, spinner })
 			);
 			await Promise.all(searchSite);
 		}
-	} catch {
-		// Console.log(error);
+	} catch (error) {
+		console.error(error.message);
 		data.errors.add(url);
 	}
 };
 
 const [siteUrl] = cli.input;
-const maxDepth = cli.flags.maxdepth;
+const { maxDepth, output, format } = cli.flags;
 const spinner = ora(`Crawling ${siteUrl}`).start();
 
+if (!siteUrl) {
+	throw new Error("No url provided.");
+}
+
+if (maxDepth <= 0) {
+	throw new Error("Maximum depth must be greater then zero");
+}
+
 try {
-	if (!siteUrl) {
-		throw new Error('No url provided.');
-	}
-
-	if (maxDepth <= 0) {
-		throw new Error('Maximum depth must be greater then zero');
-	}
-
 	const url = cleanUrl(siteUrl);
 	const data = {
 		queue: new Set([url]),
@@ -133,15 +141,22 @@ try {
 	});
 
 	spinner.stop();
+
 	const formattedData = JSON.stringify(
 		{
 			found: [...data.found].sort(),
 			errors: [...data.errors].sort(),
 		},
 		null,
-		2,
+		2
 	);
-	console.log(formattedData);
+
+	if (format === "json") {
+		fs.writeFileSync(output, formattedData);
+		console.log(
+			`Created ${output} [${data.found.size} urls found, ${data.errors.size} errors]`
+		);
+	}
 } catch (error) {
 	spinner.fail(`Failed to get URLS for ${siteUrl}`);
 	console.error(error);
