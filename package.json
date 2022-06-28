@@ -1,6 +1,6 @@
 {
   "name": "get-site-urls",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Crawl a URL to generate a sitemap and find 404 errors with one command",
   "scripts": {
     "test": "node index.test.js && xo"
@@ -10,6 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/alex-page/get-site-urls.git"
   },
+  "bin": "index.js",
   "files": [
     "index.js"
   ],

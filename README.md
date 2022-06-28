@@ -36,6 +36,7 @@ Examples
 
 ## Release History
 
+- v2.0.1 - Add missing bin entry in package.json
 - v2.0.0 - Convert get-site-urls to a cli tool
 - v1.1.7 - Update dependencies and GitHub actions to yml syntax
 - v1.1.6 - Use `xo` and `ava`, update dependencies
