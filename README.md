@@ -1,43 +1,42 @@
-# 🔗 Get site URL's
+# 🔗 get-site-urls
 
-> Get all of the URL's from a website.
+> Generate a sitemap from a URL
 
-## Install
+## Usage
 
-```console
-npm install get-site-urls
+```shell
+npx get-site-urls polaris.shopify.com
 ```
 
 ## Usage
 
-```js
-const GetSiteUrls = require("get-site-urls");
+```shell
+$ npx get-site-urls --help
 
-GetSiteUrls("https://alexpage.dev").then((links) => console.log(links));
+Get all of the URL's from a website.
 
-GetSiteUrls("https://ds:ds@designsystem.apps.y.cld.gov.au").then((links) =>
-  console.log(links)
-);
+Usage
+  $ get-site-urls <url>
 
-(async () => {
-  const links = await GetSiteUrls("https://alexpage.dev");
-  console.log(links);
-})();
+Options
+  --maxdepth, The maximum nested routes to search
+
+Examples
+  $ get-site-urls polaris.shopify.com
+  http://polaris.shopify.com
+  http://polaris.shopify.com/components
+  http://polaris.shopify.com/components/account-connection
+  http://polaris.shopify.com/components/action-list
+  http://polaris.shopify.com/components/actions/button
+  http://polaris.shopify.com/components/actions/button-group
+  http://polaris.shopify.com/components/app-provider
+  http://polaris.shopify.com/components/autocomplete
+  ...
 ```
-
-## Parameters
-
-The function GetSiteUrls takes two parameters:
-
-```
-GetSiteUrls( url, maxDepth );
-```
-
-1. url - The url to search
-1. maxDepth - The maximum depth to search, default 100
 
 ## Release History
 
+- v2.0.0 - Convert get-site-urls to a cli tool
 - v1.1.7 - Update dependencies and GitHub actions to yml syntax
 - v1.1.6 - Use `xo` and `ava`, update dependencies
 - v1.1.5 - Add tests for urls with ending slash, update documentation

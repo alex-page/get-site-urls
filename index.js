@@ -1,164 +1,147 @@
-/*
- * Get all of the URL's from a website 🔗
- */
+import meow from 'meow';
+import got from 'got';
+import ora from 'ora';
+import normalizeUrl from 'normalize-url';
+import {Parser} from 'htmlparser2';
 
-// Dependencies
-const got = require('got');
-const normalizeUrl = require('normalize-url');
+const cli = meow(
+	`
+	Usage
+		$ get-site-urls <url>
 
-/**
- * Clean the URL with normalize-url
- *
- * @param   {string} url - A url to clean up
- *
- * @returns {string}     - A clean url
- */
-const cleanUrl = url => normalizeUrl(url, {
-	stripHash: true,
-	removeQueryParameters: [new RegExp('.*')]
-});
+	Options
+		--maxdepth, The maximum nested routes to search (default, 100)
 
-/**
- * Get all of the URL's from an array of strings
- *
- * @param  {array}  data        - The pages body
- * @param  {string} pageUrl     - The page we are searching for links
- * @param  {string} siteUrl     - The website we are searching
- *
- * @return {array}              - An array of links found
- */
-const getLinks = (data, pageUrl, siteUrl) => {
-	// Regex link pattern
-	const linkPattern = /(?!.*mailto:)(?!.*tel:).<a[^>]+href="(.*?)"/g;
-	const links = [];
-	let result = true;
+	Examples
+		$ get-site-urls polaris.shopify.com
+		http://polaris.shopify.com
+		http://polaris.shopify.com/components
+		http://polaris.shopify.com/components/account-connection
+		http://polaris.shopify.com/components/action-list
+		http://polaris.shopify.com/components/actions/button
+		http://polaris.shopify.com/components/actions/button-group
+		http://polaris.shopify.com/components/app-provider
+		http://polaris.shopify.com/components/autocomplete
+`,
+	{
+		importMeta: import.meta,
+		flags: {
+			maxdepth: {
+				default: 100,
+			},
+		},
+	},
+);
 
-	// While there is a string to search
-	while (result) {
-		// Search the string using the regex pattern
-		result = linkPattern.exec(data);
-
-		// If there is no result then end the search
-		if (result === null) {
-			result = false;
-			break;
-		}
-
-		const link = result[1];
-
-		// If the link already starts with the URL
-		if (link.startsWith(siteUrl)) {
-			links.push(cleanUrl(link));
-		} else if (!link.startsWith('http') && !link.startsWith('https')
-		) {
-			// Otherwise make sure it is relative or absolute
-			const pageLink = link.startsWith('/') ? `${siteUrl}${link}` : `${pageUrl}/${link}`;
-
-			links.push(cleanUrl(pageLink));
-		}
-	}
-
-	// Return the links
-	return links;
-};
-
-/**
- * Fetch all of the URL's from a website 🔗
- *
- * @param {object} settings          - The settings for the search
- * @param {string} settings.siteUrl  - The URL we are searching
- * @param {number} settings.maxDepth - The maximum depth it should crawl
- * @param {string} settings.auth     - Basic authentication if provided
- * @param {object} pages             - The found pages, error pages and next pages in queue
- * @param {number} depth             - The current crawl depth
- *
- * @return {array}                   - An array of links found
- */
-const searchSite = async (settings, pages, depth) => {
-	const {
-		siteUrl,
-		maxDepth,
-		auth
-	} = settings;
-
-	// For each url fetch the page data
-	const links = [...pages.queue].map(async url => {
-		// Delete the URL from queue
-		pages.queue.delete(url);
-
-		try {
-			// Add authentication if it is defined
-			const gotOptions = auth ? {auth} : {};
-
-			// Get the page header so we can check the type is text/html
-			const {headers} = await got.head(url, gotOptions);
-
-			// If it is a HTML page get the body and search for links
-			if (headers['content-type'].includes('text/html')) {
-				const {body} = await got(url, gotOptions);
-
-				// Add to found as it is a HTML page
-				pages.found.add(url);
-
-				// Add the unique links to the queue
-				getLinks(body, url, cleanUrl(siteUrl)).forEach(link => {
-					// If the link is not in error or found add to queue
-					if (!pages.found.has(link) && !pages.errors.has(link)) {
-						pages.queue.add(link);
-					}
-				});
-			}
-		} catch (error) {
-			pages.errors.add(url);
-		}
+const cleanUrl = url =>
+	normalizeUrl(url, {
+		stripHash: true,
+		removeQueryParameters: true,
 	});
 
-	await Promise.all(links);
+const crawlUrl = async ({
+	url,
+	baseUrl,
+	data,
+	currentDepth,
+	maxDepth,
+	spinner,
+}) => {
+	data.queue.delete(url);
 
-	// If we have reached maximum depth or the queue is empty
-	// maxDepth + 1 as the first page doesn't count
-	if (depth === maxDepth || pages.queue.size === 0) {
-		return {
-			pages: [...pages.found],
-			errors: [...pages.errors]
-		};
+	if (maxDepth === currentDepth) {
+		return;
 	}
 
-	// Start the search again as the queue has more to search
-	return searchSite(settings, pages, depth + 1);
+	currentDepth += 1;
+
+	try {
+		const {headers} = await got.head(url);
+		if (!headers['content-type'].includes('text/html')) {
+			return;
+		}
+
+		data.found.add(url);
+
+		const {body} = await got(url);
+		const parser = new Parser({
+			onopentag(name, attributes) {
+				if (name === 'a' && attributes.href) {
+					if (
+						attributes.href.startsWith('#')
+            || attributes.href.startsWith('mailto:')
+            || attributes.href.startsWith('tel:')
+            || attributes.href.startsWith('http')
+					) {
+						return;
+					}
+
+					const newUrl = attributes.href.startsWith('/')
+						? cleanUrl(`${baseUrl}${attributes.href}`)
+						: cleanUrl(`${url}/${attributes.href}`);
+
+					if (!data.found.has(newUrl) && !data.errors.has(newUrl)) {
+						data.queue.add(newUrl);
+					}
+				}
+			},
+		});
+		parser.write(body);
+		parser.end();
+
+		if (data.queue.size > 0) {
+			spinner.text = `Found ${data.found.size}, Queued ${data.queue.size}`;
+			const searchSite = [...data.queue].map(url =>
+				crawlUrl({url, baseUrl, data, currentDepth, maxDepth, spinner}),
+			);
+			await Promise.all(searchSite);
+		}
+	} catch {
+		// Console.log(error);
+		data.errors.add(url);
+	}
 };
 
-/**
- * Fetch all of the URL's from a website 🔗
- *
- * @param {string} url    - The URL we are searching
- * @param {number} maxDepth   - The maximum depth it should crawl
- *
- * @return {array}            - An array of links found
- */
-const getSiteUrls = (url, maxDepth = 100) => {
-	const siteUrl = cleanUrl(url);
+const [siteUrl] = cli.input;
+const maxDepth = cli.flags.maxdepth;
+const spinner = ora(`Crawling ${siteUrl}`).start();
 
-	const pages = {
+try {
+	if (!siteUrl) {
+		throw new Error('No url provided.');
+	}
+
+	if (maxDepth <= 0) {
+		throw new Error('Maximum depth must be greater then zero');
+	}
+
+	const url = cleanUrl(siteUrl);
+	const data = {
 		queue: new Set([url]),
 		found: new Set([]),
-		errors: new Set([])
+		errors: new Set([]),
 	};
 
-	const {username, password} = new URL(siteUrl);
-
-	const settings = {
-		siteUrl,
+	await crawlUrl({
+		url,
+		data,
 		maxDepth,
-		auth: username && password ? `${username}:${password}` : ''
-	};
+		spinner,
+		baseUrl: url,
+		currentDepth: 0,
+	});
 
-	return searchSite(settings, pages, 0);
-};
-
-// Export the default module
-module.exports = getSiteUrls;
-
-// Export the functions for testing
-module.exports.cleanUrl = cleanUrl;
-module.exports.getLinks = getLinks;
+	spinner.stop();
+	const formattedData = JSON.stringify(
+		{
+			found: [...data.found].sort(),
+			errors: [...data.errors].sort(),
+		},
+		null,
+		2,
+	);
+	console.log(formattedData);
+} catch (error) {
+	spinner.fail(`Failed to get URLS for ${siteUrl}`);
+	console.error(error);
+}
