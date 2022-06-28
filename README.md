@@ -36,6 +36,7 @@ Examples
 
 ## Release History
 
+- v2.0.3 - Rename main to exports in package.json
 - v2.0.2 - Add name to bin entry in package.json
 - v2.0.1 - Add missing bin entry in package.json
 - v2.0.0 - Convert get-site-urls to a cli tool
