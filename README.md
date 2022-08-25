@@ -10,7 +10,7 @@ Command line interface
 npx get-site-urls polaris.shopify.com
 ```
 
-Function in nodeJS
+NodeJS
 
 ```js
 import getSiteUrls from "get-site-urls";
