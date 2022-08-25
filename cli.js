@@ -10,9 +10,9 @@ const cli = meow(
 		$ get-site-urls <url>
 
 	Options
-		--max-depth=<number>,   Maximum depth of routes to search
 		--output=<string>, -o   File saved to the system
-		--alias=<string>,       Alias for sitemap
+		--max-depth=<number>,   Maximum depth of routes to search
+		--alias=<string>,       Replace <url> with <alias> for localhost sitemap generation
 
 	Examples
 		$ get-site-urls polaris.shopify.com
@@ -27,6 +27,9 @@ const cli = meow(
 			output: {
 				default: "data.json",
 			},
+			alias: {
+				default: "",
+			},
 		},
 	}
 );
@@ -34,7 +37,7 @@ const cli = meow(
 const supportedFormats = ["csv", "json", "xml"];
 
 const [siteUrl] = cli.input;
-const { maxDepth, output, alias = "" } = cli.flags;
+const { maxDepth, output, alias } = cli.flags;
 const spinner = ora({ prefixText: `${siteUrl}` }).start();
 
 if (!siteUrl) {

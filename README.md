@@ -19,17 +19,18 @@ Usage
 	$ get-site-urls <url>
 
 Options
-	--max-depth=<number>,   Maximum depth of routes to search
 	--output=<string>, -o   File saved to the system
+	--max-depth=<number>,   Maximum depth of routes to search
+	--alias=<string>,       Replace <url> with <alias> for sitemap generation
 
 Examples
-	$ get-site-urls polaris.shopify.com
-	Created data.json [166 urls found, 2 errors]
+	$ get-site-urls polaris.shopify.com --output=sitemap.xml
+	✅ Created sitemap.xml with 137 urls
 ```
 
 ## Release History
 
-- v3.0.0 - stdout replaced with a json file, status code errors managed
+- v3.0.0 - stdout replaced with output file
 - v2.0.4 - Remove exports, relative bin entry, index.js !# to run in node env
 - v2.0.3 - Rename main to exports in package.json
 - v2.0.2 - Add name to bin entry in package.json
