@@ -1,20 +1,22 @@
 {
 	"name": "get-site-urls",
-	"version": "3.0.0",
+	"version": "3.0.0-alpha.1",
 	"description": "Crawl a URL to generate a sitemap and find 404 errors with one command",
 	"scripts": {
-		"test": "node index.test.js"
+		"test": "node test.js"
 	},
 	"type": "module",
+	"exports": "./index.js",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/alex-page/get-site-urls.git"
 	},
 	"bin": {
-		"get-site-urls": "index.js"
+		"get-site-urls": "cli.js"
 	},
 	"files": [
-		"./index.js"
+		"./index.js",
+		"./cli.js"
 	],
 	"keywords": [
 		"crawl",

@@ -21,7 +21,6 @@ Usage
 Options
 	--max-depth=<number>,   Maximum depth of routes to search
 	--output=<string>, -o   File saved to the system
-	--format=<string>, -f,  File format
 
 Examples
 	$ get-site-urls polaris.shopify.com
