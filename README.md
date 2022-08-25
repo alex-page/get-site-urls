@@ -16,26 +16,21 @@ $ npx get-site-urls --help
 Get all of the URL's from a website.
 
 Usage
-  $ get-site-urls <url>
+	$ get-site-urls <url>
 
 Options
-  --maxdepth, The maximum nested routes to search
+	--output=<string>, -o   File saved to the system
+	--max-depth=<number>,   Maximum depth of routes to search
+	--alias=<string>,       Replace <url> with <alias> for sitemap generation
 
 Examples
-  $ get-site-urls polaris.shopify.com
-  http://polaris.shopify.com
-  http://polaris.shopify.com/components
-  http://polaris.shopify.com/components/account-connection
-  http://polaris.shopify.com/components/action-list
-  http://polaris.shopify.com/components/actions/button
-  http://polaris.shopify.com/components/actions/button-group
-  http://polaris.shopify.com/components/app-provider
-  http://polaris.shopify.com/components/autocomplete
-  ...
+	$ get-site-urls polaris.shopify.com --output=sitemap.xml
+	✅ Created sitemap.xml with 137 urls
 ```
 
 ## Release History
 
+- v3.0.0 - stdout replaced with output file
 - v2.0.4 - Remove exports, relative bin entry, index.js !# to run in node env
 - v2.0.3 - Rename main to exports in package.json
 - v2.0.2 - Add name to bin entry in package.json
