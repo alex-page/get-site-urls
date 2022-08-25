@@ -18,7 +18,7 @@ import getSiteUrls from "get-site-urls";
 const urls = await getSiteUrls("alexpage.dev");
 ```
 
-## CLI
+## CLI options
 
 ```shell
 $ npx get-site-urls --help
