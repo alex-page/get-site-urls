@@ -1,6 +1,6 @@
 {
 	"name": "get-site-urls",
-	"version": "3.0.0-alpha.1",
+	"version": "3.0.0",
 	"description": "Crawl a URL to generate a sitemap and find 404 errors with one command",
 	"scripts": {
 		"test": "node test.js"

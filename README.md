@@ -4,11 +4,21 @@
 
 ## Usage
 
+Command line interface
+
 ```shell
 npx get-site-urls polaris.shopify.com
 ```
 
-## Usage
+Function in nodeJS
+
+```js
+import getSiteUrls from "get-site-urls";
+
+const urls = await getSiteUrls("alexpage.dev");
+```
+
+## CLI options
 
 ```shell
 $ npx get-site-urls --help
