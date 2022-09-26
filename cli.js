@@ -26,6 +26,7 @@ const cli = meow(
 			},
 			output: {
 				default: "data.json",
+				alias: "o",
 			},
 			alias: {
 				default: "",
@@ -34,7 +35,7 @@ const cli = meow(
 	}
 );
 
-const supportedFormats = ["csv", "json", "xml"];
+const supportedFormats = ["csv", "txt", "json", "xml"];
 
 const [siteUrl] = cli.input;
 const { maxDepth, output, alias } = cli.flags;
@@ -84,7 +85,7 @@ try {
 		console.log(`✅ Created ${output} with ${data.found.length} urls`);
 	}
 
-	if (format === "csv") {
+	if (format === "csv" || format === "txt") {
 		fs.writeFileSync(output, data.found.join("\n"));
 		console.log(`✅ Created ${output} with ${data.found.length} urls`);
 	}
