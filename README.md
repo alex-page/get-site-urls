@@ -4,21 +4,13 @@
 
 ## Usage
 
-Command line interface
+### Command line interface
 
 ```shell
 npx get-site-urls polaris.shopify.com
 ```
 
-NodeJS
-
-```js
-import getSiteUrls from "get-site-urls";
-
-const urls = await getSiteUrls("alexpage.dev");
-```
-
-## CLI options
+#### CLI options
 
 ```shell
 $ npx get-site-urls --help
@@ -36,6 +28,25 @@ Options
 Examples
 	$ get-site-urls polaris.shopify.com --output=sitemap.xml
 	✅ Created sitemap.xml with 137 urls
+```
+
+### NodeJS
+
+```js
+import getSiteUrls from "get-site-urls";
+
+const urls = await getSiteUrls("alexpage.dev");
+```
+
+#### NodeJS options
+
+`maxDepth` - Maximum depth of routes to search
+
+```js
+import getSiteUrls from "get-site-urls";
+
+const maxDepth = 2;
+const urls = await getSiteUrls("alexpage.dev", 2);
 ```
 
 ## Release History
