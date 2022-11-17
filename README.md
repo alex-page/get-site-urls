@@ -46,7 +46,7 @@ const urls = await getSiteUrls("alexpage.dev");
 import getSiteUrls from "get-site-urls";
 
 const maxDepth = 2;
-const urls = await getSiteUrls("alexpage.dev", 2);
+const urls = await getSiteUrls("alexpage.dev", maxDepth);
 ```
 
 ## Release History
