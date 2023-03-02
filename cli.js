@@ -49,7 +49,7 @@ if (maxDepth <= 0) {
 	throw new Error("Maximum depth must be greater then zero");
 }
 
-const format = output.split(".")[1];
+const format = output.split(".").pop();
 
 if (!supportedFormats.includes(format)) {
 	throw new Error(`Output must be file types [${supportedFormats.join(", ")}]`);
