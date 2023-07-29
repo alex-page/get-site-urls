@@ -1,6 +1,7 @@
 import got from "got";
 import normalizeUrl from "normalize-url";
 import { Parser } from "htmlparser2";
+import puppeteer from "puppeteer";
 
 /** @type {(url: string) => string} */
 export const cleanUrl = (url) =>
@@ -15,6 +16,7 @@ export const cleanUrl = (url) =>
  *   baseUrl: string;
  *   data: GetSiteUrlsData;
  *   currentDepth: number;
+ *   browser: import('puppeteer').Browser;
  * }} options
  * @returns {Promise<void>}
  */
@@ -25,6 +27,7 @@ export const crawlUrl = async ({
 	currentDepth,
 	maxDepth,
 	logger,
+	browser,
 }) => {
 	data.queue.delete(url);
 
@@ -46,7 +49,14 @@ export const crawlUrl = async ({
 
 		data.found.add(url);
 
-		const { body } = await got(url);
+		const page = await browser.newPage();
+
+		await page.goto(url, { waitUntil: "load" });
+
+		const html = await page.evaluate(() => document.documentElement.outerHTML);
+
+		await page.close();
+
 		const parser = new Parser({
 			onopentag(name, attributes) {
 				if (name === "a" && attributes.href) {
@@ -69,7 +79,7 @@ export const crawlUrl = async ({
 				}
 			},
 		});
-		parser.write(body);
+		parser.write(html);
 		parser.end();
 
 		if (data.queue.size > 0) {
@@ -80,7 +90,15 @@ export const crawlUrl = async ({
 			});
 
 			const searchSite = [...data.queue].map((url) =>
-				crawlUrl({ url, baseUrl, data, currentDepth, maxDepth, logger })
+				crawlUrl({
+					url,
+					baseUrl,
+					data,
+					currentDepth,
+					maxDepth,
+					logger,
+					browser,
+				})
 			);
 			await Promise.all(searchSite);
 		}
@@ -118,6 +136,10 @@ export const crawlUrl = async ({
  * @returns {Promise<GetSiteUrlsResult>}
  */
 const getSiteUrls = async (siteUrl, { maxDepth, logger } = {}) => {
+	const browser = await puppeteer.launch({
+		headless: "new",
+	});
+
 	const url = cleanUrl(siteUrl);
 
 	/**  @type {GetSiteUrlsData} */
@@ -134,7 +156,10 @@ const getSiteUrls = async (siteUrl, { maxDepth, logger } = {}) => {
 		logger,
 		baseUrl: url,
 		currentDepth: 0,
+		browser,
 	});
+
+	await browser.close();
 
 	return {
 		found: [...rawData.found].sort(),
