@@ -2,19 +2,29 @@ import got from "got";
 import normalizeUrl from "normalize-url";
 import { Parser } from "htmlparser2";
 
+/** @type {(url: string) => string} */
 export const cleanUrl = (url) =>
 	normalizeUrl(url, {
 		stripHash: true,
 		removeQueryParameters: true,
 	});
 
+/**
+ * @param {Pick<GetSiteUrlsOptions, 'maxDepth' | 'logger'> & {
+ *   url: string;
+ *   baseUrl: string;
+ *   data: GetSiteUrlsData;
+ *   currentDepth: number;
+ * }} options
+ * @returns {Promise<void>}
+ */
 export const crawlUrl = async ({
 	url,
 	baseUrl,
 	data,
 	currentDepth,
 	maxDepth,
-	spinner,
+	logger,
 }) => {
 	data.queue.delete(url);
 
@@ -30,7 +40,7 @@ export const crawlUrl = async ({
 			return;
 		}
 
-		if (!headers["content-type"].includes("text/html")) {
+		if (!headers["content-type"]?.includes("text/html")) {
 			return;
 		}
 
@@ -63,11 +73,14 @@ export const crawlUrl = async ({
 		parser.end();
 
 		if (data.queue.size > 0) {
-			if (spinner) {
-				spinner.text = `${data.found.size} Found, ${data.queue.size} Queued, ${data.errors.size} Errors`;
-			}
+			logger?.({
+				queue: data.queue.size,
+				found: data.found.size,
+				errors: data.errors.size,
+			});
+
 			const searchSite = [...data.queue].map((url) =>
-				crawlUrl({ url, baseUrl, data, currentDepth, maxDepth, spinner })
+				crawlUrl({ url, baseUrl, data, currentDepth, maxDepth, logger })
 			);
 			await Promise.all(searchSite);
 		}
@@ -80,9 +93,34 @@ export const crawlUrl = async ({
 	}
 };
 
-const getSiteUrls = async (siteUrl, maxDepth) => {
+/**
+ * @typedef {object} GetSiteUrlsData
+ * @property {Set<string>} queue
+ * @property {Set<string>} found
+ * @property {Set<string>} errors
+ */
+
+/**
+ * @typedef {object} GetSiteUrlsResult
+ * @property {string[]} found
+ * @property {string[]} errors
+ */
+
+/**
+ * @typedef {object} GetSiteUrlsOptions
+ * @property {number} [maxDepth]
+ * @property {(current: { queue: number; found: number; errors: number }) => void} [logger]
+ */
+
+/**
+ * @param {string} siteUrl
+ * @param {GetSiteUrlsOptions} [options]
+ * @returns {Promise<GetSiteUrlsResult>}
+ */
+const getSiteUrls = async (siteUrl, { maxDepth, logger } = {}) => {
 	const url = cleanUrl(siteUrl);
 
+	/**  @type {GetSiteUrlsData} */
 	const rawData = {
 		queue: new Set([url]),
 		found: new Set([]),
@@ -93,7 +131,7 @@ const getSiteUrls = async (siteUrl, maxDepth) => {
 		url,
 		data: rawData,
 		maxDepth,
-		spinner: null,
+		logger,
 		baseUrl: url,
 		currentDepth: 0,
 	});
