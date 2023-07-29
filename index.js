@@ -1,20 +1,33 @@
 import got from "got";
 import normalizeUrl from "normalize-url";
 import { Parser } from "htmlparser2";
+import puppeteer from "puppeteer";
 
+/** @type {(url: string) => string} */
 export const cleanUrl = (url) =>
 	normalizeUrl(url, {
 		stripHash: true,
 		removeQueryParameters: true,
 	});
 
+/**
+ * @param {Pick<GetSiteUrlsOptions, 'maxDepth' | 'logger'> & {
+ *   url: string;
+ *   baseUrl: string;
+ *   data: GetSiteUrlsData;
+ *   currentDepth: number;
+ *   browser: import('puppeteer').Browser;
+ * }} options
+ * @returns {Promise<void>}
+ */
 export const crawlUrl = async ({
 	url,
 	baseUrl,
 	data,
 	currentDepth,
 	maxDepth,
-	spinner,
+	logger,
+	browser,
 }) => {
 	data.queue.delete(url);
 
@@ -30,13 +43,20 @@ export const crawlUrl = async ({
 			return;
 		}
 
-		if (!headers["content-type"].includes("text/html")) {
+		if (!headers["content-type"]?.includes("text/html")) {
 			return;
 		}
 
 		data.found.add(url);
 
-		const { body } = await got(url);
+		const page = await browser.newPage();
+
+		await page.goto(url, { waitUntil: "load" });
+
+		const html = await page.evaluate(() => document.documentElement.outerHTML);
+
+		await page.close();
+
 		const parser = new Parser({
 			onopentag(name, attributes) {
 				if (name === "a" && attributes.href) {
@@ -59,15 +79,26 @@ export const crawlUrl = async ({
 				}
 			},
 		});
-		parser.write(body);
+		parser.write(html);
 		parser.end();
 
 		if (data.queue.size > 0) {
-			if (spinner) {
-				spinner.text = `${data.found.size} Found, ${data.queue.size} Queued, ${data.errors.size} Errors`;
-			}
+			logger?.({
+				queue: data.queue.size,
+				found: data.found.size,
+				errors: data.errors.size,
+			});
+
 			const searchSite = [...data.queue].map((url) =>
-				crawlUrl({ url, baseUrl, data, currentDepth, maxDepth, spinner })
+				crawlUrl({
+					url,
+					baseUrl,
+					data,
+					currentDepth,
+					maxDepth,
+					logger,
+					browser,
+				})
 			);
 			await Promise.all(searchSite);
 		}
@@ -75,14 +106,43 @@ export const crawlUrl = async ({
 		if (!error.message.includes("404")) {
 			console.error(`Failed to load ${url}:\n${error.message}\n\n`);
 		} else {
-			data.errors.add(`404: ${url}`);
+			data.errors.add(url);
 		}
 	}
 };
 
-const getSiteUrls = async (siteUrl, maxDepth) => {
+/**
+ * @typedef {object} GetSiteUrlsData
+ * @property {Set<string>} queue
+ * @property {Set<string>} found
+ * @property {Set<string>} errors
+ */
+
+/**
+ * @typedef {object} GetSiteUrlsResult
+ * @property {string[]} found
+ * @property {string[]} errors
+ */
+
+/**
+ * @typedef {object} GetSiteUrlsOptions
+ * @property {number} [maxDepth]
+ * @property {(current: { queue: number; found: number; errors: number }) => void} [logger]
+ */
+
+/**
+ * @param {string} siteUrl
+ * @param {GetSiteUrlsOptions} [options]
+ * @returns {Promise<GetSiteUrlsResult>}
+ */
+const getSiteUrls = async (siteUrl, { maxDepth, logger } = {}) => {
+	const browser = await puppeteer.launch({
+		headless: "new",
+	});
+
 	const url = cleanUrl(siteUrl);
 
+	/**  @type {GetSiteUrlsData} */
 	const rawData = {
 		queue: new Set([url]),
 		found: new Set([]),
@@ -93,10 +153,13 @@ const getSiteUrls = async (siteUrl, maxDepth) => {
 		url,
 		data: rawData,
 		maxDepth,
-		spinner: null,
+		logger,
 		baseUrl: url,
 		currentDepth: 0,
+		browser,
 	});
+
+	await browser.close();
 
 	return {
 		found: [...rawData.found].sort(),

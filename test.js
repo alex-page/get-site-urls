@@ -35,7 +35,7 @@ const test = async () => {
 	server.close();
 
 	// Compare the results
-	[scriptResult, cliResult].forEach((result) => {
+	[scriptResult, { found: cliResult, errors: [] }].forEach((result) => {
 		const unmatchedFixtures = [
 			...result.found.filter((x) => !foundFixture.includes(x)),
 			...result.errors.filter((x) => !errorFixture.includes(x)),

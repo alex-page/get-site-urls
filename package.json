@@ -55,6 +55,7 @@
 		"htmlparser2": "^8.0.1",
 		"meow": "^10.1.2",
 		"normalize-url": "^7.0.3",
-		"ora": "^6.1.0"
+		"ora": "^6.1.0",
+		"puppeteer": "^20.9.0"
 	}
 }

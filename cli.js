@@ -2,7 +2,7 @@
 import meow from "meow";
 import ora from "ora";
 import fs from "fs";
-import { cleanUrl, crawlUrl } from "./index.js";
+import getSiteUrls from "./index.js";
 
 const cli = meow(
 	`
@@ -22,13 +22,16 @@ const cli = meow(
 		importMeta: import.meta,
 		flags: {
 			maxDepth: {
+				type: "number",
 				default: 100,
 			},
 			output: {
+				type: "string",
 				default: "data.json",
 				alias: "o",
 			},
 			alias: {
+				type: "string",
 				default: "",
 			},
 		},
@@ -56,27 +59,12 @@ if (!supportedFormats.includes(format)) {
 }
 
 try {
-	const url = cleanUrl(siteUrl);
-
-	const rawData = {
-		queue: new Set([url]),
-		found: new Set([]),
-		errors: new Set([]),
-	};
-
-	await crawlUrl({
-		url,
-		data: rawData,
+	const data = await getSiteUrls(siteUrl, {
 		maxDepth,
-		spinner,
-		baseUrl: url,
-		currentDepth: 0,
+		logger: (current) => {
+			spinner.text = `${current.found} Found, ${current.queue} Queued, ${current.errors} Errors`;
+		},
 	});
-
-	const data = {
-		found: [...rawData.found].sort(),
-		errors: [...rawData.errors].sort(),
-	};
 
 	spinner.stop();
 
