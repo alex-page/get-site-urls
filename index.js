@@ -75,7 +75,7 @@ export const crawlUrl = async ({
 		if (!error.message.includes("404")) {
 			console.error(`Failed to load ${url}:\n${error.message}\n\n`);
 		} else {
-			data.errors.add(`404: ${url}`);
+			data.errors.add(url);
 		}
 	}
 };
